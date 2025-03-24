@@ -1,0 +1,6 @@
+apiVersion: v2
+name: finalproyectapp
+description: A simple Helm chart for deploying an application
+type: application
+version: 0.1.0
+appVersion: "1.0"
