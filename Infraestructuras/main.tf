@@ -17,7 +17,7 @@ provider "azurerm" {
 
 resource "azurerm_kubernetes_cluster" "cluster" {
   name                = "ClusterProyecto"
-  location            = "West Europe"
+  location            = "East US"
   resource_group_name = "piarnedo2"
   dns_prefix          = "learnk8scluster"
 

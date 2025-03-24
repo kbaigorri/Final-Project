@@ -19,6 +19,7 @@ spec:
         image: redis:latest
         ports:
         - containerPort: 6379
+        command: ["redis-server", "--requirepass", "someredispassword"]
 ---
 apiVersion: v1
 kind: Service
