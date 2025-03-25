@@ -1,0 +1,49 @@
+name: 1 - Build and Push frontend Docker Image to ACR
+ 
+on:
+  push:
+    paths:
+      - 'expensy_frontend/**'  # Se ejecuta solo si hay cambios en la carpeta expensy_frontend
+    branches:
+      - main  # Cambia esta rama si no usas `main`
+  workflow_dispatch:  # Esto permite ejecutar la acción manualmente desde la interfaz de GitHub
+ 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+ 
+    steps:
+    # Paso 1: Chequear el código del repositorio
+    - name: Checkout code
+      uses: actions/checkout@v2
+ 
+    # Paso 2: Iniciar sesión en Docker Hub
+    - name: Log in to Docker Hub
+      run: |
+        echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+    # Paso 3: Construir las imagen Docker Backend
+    - name: Build Docker image Backend
+      run: |
+        cd expensy_backend
+        docker build -t expensy_backend:latest ./expensy_backend
+        docker tag expensy_backend:latest ${{ secrets.DOCKERHUB_USERNAME }}/expensy_backend:latest 
+
+    # Paso 4: Subir la imagen Docker Backend a Docker Hub
+    - name: Push Docker image to Docker Hub
+      run: |
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/expensy_backend:latest 
+      if: github.ref == 'refs/heads/main'
+
+    # Paso 5: Construir las imagen Docker Frontend
+    - name: Build Docker image Frontend
+      run: |
+        cd expensy_frontend
+        docker build -t expensy_frontend:latest ./expensy_frontend
+        docker tag expensy_frontend:latest ${{ secrets.DOCKERHUB_USERNAME }}/expensy_frontend:latest 
+
+    # Paso 6: Subir la imagen Docker Frontend a Docker Hub
+    - name: Push Docker image to Docker Hub
+      run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/expensy_frontend:latest 
+      if: github.ref == 'refs/heads/main'

@@ -25,6 +25,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     name       = "default"
     node_count = "2"
     vm_size    = "standard_d2_v2"
+    enable_node_public_ip = true   //Asigna una ip publica aleatorio a ambos nodos creados en el Cluster de AKS
   }
 
   identity {

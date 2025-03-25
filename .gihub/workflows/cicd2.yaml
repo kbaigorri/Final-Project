@@ -1,0 +1,54 @@
+name: 2 - Deploy application to AKS
+ 
+on:
+    workflow_dispatch:  # Esto permite ejecutar la acción manualmente desde la interfaz de GitHub
+ 
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+ 
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+ 
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+ 
+    - name: Set AKS context
+      run: |
+        # Configura el contexto de kubectl para AKS
+        az aks get-credentials --resource-group rg-aks-ironhack-final --name aks-ironhack-final
+
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh 
+        chmod 700 get_helm.sh 
+        ./get_helm.sh
+    
+    - name: Install Ingress
+      run: |
+       kubectl create namespace ingress-nginx
+       
+       helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+       helm repo update  
+
+       helm install ingress-nginx ingress-nginx/ingress-nginx \
+        --set rbac.create=true \
+        --set controller.kind=DaemonSet \
+        --set controller.service.type=LoadBalancer \
+        --set controller.service.loadBalancerIP=134.33.213.156 \
+        --set controller.service.externalTrafficPolicy=Local \
+        --set controller.publishService.enabled=true \
+        --set defaultBackend.enabled=true \
+        --set enable-prometheus-metrics=true \
+        --namespace ingress-nginx
+
+    - name: Deploy to AKS
+      run: |
+        cd Deployments/
+        helm install finalproyectapp .
+ 
+    - name: Verify deployment
+      run: kubectl get pods

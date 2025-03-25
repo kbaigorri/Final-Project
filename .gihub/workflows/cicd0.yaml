@@ -1,0 +1,50 @@
+name: 0 - Deploy AKS and ACR with Terraform
+ 
+on:
+  push:
+    paths:
+      - '../infraestructuras/**'  # Se ejecuta solo si hay cambios en esta carpeta
+    branches:
+      - main  # Solo en la rama "main"
+ 
+  # Permite ejecutar el workflow manualmente
+  workflow_dispatch:  # Habilita el trigger manual desde la interfaz de GitHub
+ 
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    name: Apply Terraform
+    runs-on: ubuntu-latest
+ 
+    defaults:
+      run:
+        working-directory: infraestructuras  # Define la carpeta de trabajo
+ 
+    steps:
+      - name: 🛠️ Checkout repository
+        uses: actions/checkout@v4
+ 
+      - name: 🔑 Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}  # Usar el archivo de credenciales como secreto  ??? /home/piarnedo/.kube/config? ?? 
+ 
+      - name: 📦 Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+ 
+      - name: 🏗️ Initialize Terraform
+        run: terraform init
+ 
+      - name: 🔍 Validate Terraform
+        run: terraform validate
+ 
+      - name: 🚀 Plan Terraform
+        run: terraform plan -out=tfplan
+ 
+      - name: ✅ Apply Terraform
+        run: terraform apply -auto-approve
